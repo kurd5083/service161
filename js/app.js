@@ -562,7 +562,7 @@ syncHeaderHeight();
 window.addEventListener("resize", syncHeaderHeight);
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=8").catch(() => {});
+  navigator.serviceWorker.register("sw.js?v=9").catch(() => {});
 }
 
 loadConfig()
