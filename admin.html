@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Админка — Сервис 161</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="/css/app.css?v=2">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/app.css?v=4">
 </head>
 <body class="admin">
   <header class="top">
@@ -15,15 +15,15 @@
       <div class="mark">161</div>
       <div>
         <b>Админка</b>
-        <small>Пишет в data/config.json</small>
+        <small>Скачивает config.json</small>
       </div>
     </div>
-    <a class="code-chip" href="/">На сайт</a>
+    <a class="code-chip" href="index.html">На сайт</a>
   </header>
   <main>
     <form class="login" id="login">
       <h1>Вход</h1>
-      <p class="lead">Пароль по умолчанию лежит в data/admin.json.</p>
+      <p class="lead">Пароль: 161161</p>
       <input id="password" type="password" autocomplete="current-password" placeholder="Пароль" required>
       <p class="error" id="login-error"></p>
       <button class="btn primary" type="submit">Войти</button>
@@ -107,8 +107,9 @@
     </div>
   </dialog>
   <div id="toast" role="status"></div>
-  <script src="/vendor/leaflet/leaflet.js"></script>
-  <script src="/js/util.js?v=2"></script>
-  <script src="/js/admin.js?v=2"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="js/config.js?v=4"></script>
+  <script src="js/util.js?v=4"></script>
+  <script src="js/admin.js?v=4"></script>
 </body>
 </html>

@@ -13,16 +13,29 @@ function toast(text) {
   toast.timer = setTimeout(() => el.classList.remove("show"), 2200);
 }
 
-async function api(url, options = {}) {
-  const opts = { credentials: "same-origin", ...options };
-  if (opts.body && typeof opts.body !== "string") {
-    opts.headers = { "Content-Type": "application/json", ...(options.headers || {}) };
-    opts.body = JSON.stringify(opts.body);
+function download(name, text) {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+async function loadSiteConfig() {
+  try {
+    const response = await fetch("config.json", { cache: "no-store" });
+    if (response.ok) {
+      const data = await response.json();
+      if (data && Array.isArray(data.points)) return data;
+    }
+  } catch {
+    /* opened as a file, without a host */
   }
-  const response = await fetch(url, opts);
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || "Ошибка " + response.status);
-  return data;
+  if (window.__CONFIG__ && Array.isArray(window.__CONFIG__.points)) {
+    return JSON.parse(JSON.stringify(window.__CONFIG__));
+  }
+  throw new Error("Не найден config.json");
 }
 
 function uid(prefix) {
@@ -71,12 +84,14 @@ async function persist() {
   payload.office.items = payload.office.items.filter((item) => item.name);
   payload.rules = payload.rules.filter((rule) => rule.title || rule.text);
   payload.categories = payload.categories.filter((category) => category.title && category.id);
-  const saved = await api("/api/config", { method: "PUT", body: payload });
   config = payload;
-  config.updatedAt = saved.updatedAt;
+  config.updatedAt = new Date().toISOString();
+  const json = JSON.stringify(config, null, 2);
+  download("config.json", json + "\n");
+  setTimeout(() => download("config.js", "window.__CONFIG__ = " + json + ";\n"), 400);
   if ($("office-title")) renderOffice();
   if ($("text-code")) renderTexts();
-  toast("Записано в config.json");
+  toast("Скачаны config.json и config.js. Замените их в папке и снова загрузите сайт на Netlify.");
 }
 
 function renderPoints() {
@@ -351,28 +366,34 @@ document.addEventListener("click", async (event) => {
   if (event.target.closest("[data-cremove]")) event.target.closest(".contact-edit").remove();
 });
 
-$("login").addEventListener("submit", async (event) => {
+$("login").addEventListener("submit", (event) => {
   event.preventDefault();
   $("login-error").textContent = "";
-  try {
-    await api("/api/login", { method: "POST", body: { password: $("password").value } });
-    await boot();
-  } catch (error) {
-    $("login-error").textContent = error.message;
+  const expected = (config && config.adminPassword) || "161161";
+  if ($("password").value !== expected) {
+    $("login-error").textContent = "Неверный пароль";
+    return;
   }
+  sessionStorage.setItem("s161", "1");
+  openPanel();
 });
 
-$("logout").addEventListener("click", async () => {
-  await api("/api/logout", { method: "POST", body: {} });
+$("logout").addEventListener("click", () => {
+  sessionStorage.removeItem("s161");
   location.reload();
 });
 
 $("save-pass").addEventListener("click", async () => {
   $("pass-error").textContent = "";
+  const next = $("new-password").value;
+  if (next.length < 4) {
+    $("pass-error").textContent = "Пароль короче 4 символов";
+    return;
+  }
+  config.adminPassword = next;
+  $("new-password").value = "";
   try {
-    await api("/api/password", { method: "POST", body: { password: $("new-password").value } });
-    $("new-password").value = "";
-    toast("Пароль сменён");
+    await persist();
   } catch (error) {
     $("pass-error").textContent = error.message;
   }
@@ -390,7 +411,18 @@ $("f-geocode").addEventListener("click", async () => {
   const query = [$("f-address").value.trim(), $("f-locality").value.trim()].filter(Boolean).join(", ");
   $("f-hits").innerHTML = "<span class='muted'>Ищу…</span>";
   try {
-    const data = await api("/api/geocode?q=" + encodeURIComponent(query));
+    const response = await fetch(
+      "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=ru&q=" + encodeURIComponent(query),
+      { headers: { "Accept-Language": "ru" } }
+    );
+    if (!response.ok) throw new Error("Адрес не найден. Поставьте точку кликом по карте.");
+    const data = {
+      hits: (await response.json()).map((item) => ({
+        lat: Number(item.lat),
+        lng: Number(item.lon),
+        label: item.display_name,
+      })),
+    };
     if (!data.hits.length) {
       $("f-hits").textContent = "Ничего не нашлось. Поставьте точку кликом по карте.";
       return;
@@ -442,15 +474,17 @@ document.body.addEventListener("click", async (event) => {
   }
 });
 
-async function boot() {
-  const me = await api("/api/me");
-  if (!me.ok) return;
-  config = await api("/api/config");
+function openPanel() {
   $("login").classList.add("hidden");
   $("panel").classList.remove("hidden");
   renderPoints();
   renderOffice();
   renderTexts();
+}
+
+async function boot() {
+  config = await loadSiteConfig();
+  if (sessionStorage.getItem("s161") === "1") openPanel();
 }
 
 boot().catch((error) => {

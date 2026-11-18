@@ -1,4 +1,4 @@
-{
+window.__CONFIG__ = {
   "version": 1,
   "codeWord": "СЕРВИС 161",
   "city": "Ростов-на-Дону",
@@ -680,26 +680,7 @@
           "prefer": "any"
         }
       ]
-    },
-    {
-      "id": "p-mwm97rsd6y3",
-      "categories": [
-        "shops"
-      ],
-      "name": "Проверка удалить",
-      "partner": false,
-      "callAhead": false,
-      "address": "Тестовая улица, 1",
-      "locality": "Ростов-на-Дону",
-      "lat": null,
-      "lng": null,
-      "precision": "none",
-      "hours": [],
-      "hoursNote": "",
-      "cardNote": "",
-      "notes": "",
-      "contacts": []
     }
   ],
-  "updatedAt": "2026-11-18T15:06:19.894Z"
-}
+  "updatedAt": "2026-11-18T15:06:47.773Z"
+};

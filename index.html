@@ -8,11 +8,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Сервис 161">
   <title>Сервис 161 — запчасти</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="/css/app.css?v=2">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/app.css?v=4">
 </head>
 <body data-view="list">
   <header class="top">
@@ -61,9 +61,9 @@
   <section id="view-more">
     <div id="rules"></div>
     <article class="panel">
-      <h3>Телефон в той же Wi-Fi</h3>
+      <h3>Открыть с телефона</h3>
       <div class="stack" id="lan"></div>
-      <p class="muted">Маршрут открывается в Яндекс Картах, Навигаторе или 2ГИС и уже там ведёт от вашего GPS. Синяя точка «где я» на этой карте с телефона по обычному http может быть заблокирована браузером — на компьютере по localhost она работает.</p>
+      <p class="muted" id="host-note">Маршрут открывается в Яндекс Картах, Навигаторе или 2ГИС и уже там ведёт от текущего GPS.</p>
     </article>
     <article class="panel">
       <h3>Приложение</h3>
@@ -72,8 +72,8 @@
     </article>
     <article class="panel">
       <h3>Откуда берутся данные</h3>
-      <p>Всё лежит в файле <b>data/config.json</b>. Админка записывает туда же, сайт читает этот файл.</p>
-      <p><a class="btn" href="/admin">Открыть админку</a></p>
+      <p>Список точек лежит в файле <b>config.json</b> рядом с этой страницей. После правок в админке скачиваются новые <b>config.json</b> и <b>config.js</b>: замените ими старые файлы и снова загрузите папку на Netlify.</p>
+      <p><a class="btn" href="admin.html">Открыть админку</a></p>
     </article>
   </section>
 
@@ -99,8 +99,9 @@
   <article id="detail"></article>
   <div id="toast" role="status"></div>
 
-  <script src="/vendor/leaflet/leaflet.js"></script>
-  <script src="/js/util.js?v=2"></script>
-  <script src="/js/app.js?v=2"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="js/config.js?v=4"></script>
+  <script src="js/util.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>

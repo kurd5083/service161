@@ -448,10 +448,21 @@ function renderAll() {
   renderLocateNote();
 }
 
+async function readConfig(url) {
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) return null;
+    const data = JSON.parse(await response.text());
+    if (!data || !Array.isArray(data.points)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 async function loadConfig() {
-  const response = await fetch("/api/config", { cache: "no-store" });
-  if (!response.ok) throw new Error("Не удалось прочитать config.json");
-  const next = await response.json();
+  const next = (await readConfig("config.json")) || window.__CONFIG__ || null;
+  if (!next) throw new Error("Не удалось прочитать справочник");
   const changed = JSON.stringify(next) !== JSON.stringify(state.config);
   state.config = next;
   if (changed) {
@@ -462,14 +473,24 @@ async function loadConfig() {
 }
 
 async function loadInfo() {
+  const links = [location.origin];
   try {
-    const response = await fetch("/api/info", { cache: "no-store" });
-    const info = await response.json();
-    const links = [info.local, ...(info.lan || [])];
-    $("lan").innerHTML = links.map((link) => `<a href="${S161.esc(link)}">${S161.esc(link)}</a>`).join("")
-      || "<span>Откройте сайт с этого компьютера.</span>";
+    const response = await fetch("api/info", { cache: "no-store" });
+    if (response.ok) {
+      const info = await response.json();
+      for (const link of [info.local, ...(info.lan || [])]) {
+        if (link && !links.includes(link)) links.push(link);
+      }
+    }
   } catch {
-    $("lan").textContent = "Адрес сети появится, когда сервер ответит.";
+    /* static hosting has no local network list */
+  }
+  $("lan").innerHTML = links.map((link) => `<a href="${S161.esc(link)}">${S161.esc(link)}</a>`).join("");
+  const note = $("host-note");
+  if (note) {
+    note.textContent = location.protocol === "https:"
+      ? "Ссылка защищённая: с телефона работают карта, синяя точка «где я» и установка на экран."
+      : "По адресу компьютера в Wi-Fi звонки и маршруты работают. Синяя точка «где я» с телефона по обычному http может быть закрыта браузером.";
   }
 }
 
@@ -552,7 +573,7 @@ $("install").addEventListener("click", async () => {
 });
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js?v=2").catch(() => {});
+  navigator.serviceWorker.register("sw.js?v=4").catch(() => {});
 }
 
 loadConfig()
