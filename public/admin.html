@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Админка — Сервис 161</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/css/app.css?v=2">
+</head>
+<body class="admin">
+  <header class="top">
+    <div class="brand">
+      <div class="mark">161</div>
+      <div>
+        <b>Админка</b>
+        <small>Пишет в data/config.json</small>
+      </div>
+    </div>
+    <a class="code-chip" href="/">На сайт</a>
+  </header>
+  <main>
+    <form class="login" id="login">
+      <h1>Вход</h1>
+      <p class="lead">Пароль по умолчанию лежит в data/admin.json.</p>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Пароль" required>
+      <p class="error" id="login-error"></p>
+      <button class="btn primary" type="submit">Войти</button>
+    </form>
+
+    <div id="panel" class="hidden">
+      <div class="admin-head">
+        <h1>Справочник</h1>
+        <button type="button" class="btn" id="logout">Выйти</button>
+      </div>
+      <div class="tabs-admin">
+        <button type="button" class="chip is-on" data-tab="points">Точки</button>
+        <button type="button" class="chip" data-tab="office">Цены офиса</button>
+        <button type="button" class="chip" data-tab="texts">Тексты</button>
+        <button type="button" class="chip" data-tab="pass">Пароль</button>
+      </div>
+      <section id="tab-points"></section>
+      <section id="tab-office" class="hidden"></section>
+      <section id="tab-texts" class="hidden"></section>
+      <section id="tab-pass" class="hidden">
+        <article class="panel">
+          <h3>Новый пароль</h3>
+          <input class="bare" id="new-password" type="password" minlength="4" placeholder="Минимум 4 символа">
+          <p class="error" id="pass-error"></p>
+          <button type="button" class="btn primary" id="save-pass">Сменить пароль</button>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="editor">
+    <div class="dialog-body">
+      <div class="section-head">
+        <h2 id="editor-title">Точка</h2>
+        <button type="button" class="back" id="editor-close" aria-label="Закрыть">×</button>
+      </div>
+      <div class="edit-grid">
+        <label>Название<input id="f-name" required></label>
+        <label>Короткая пометка на карточке<input id="f-card"></label>
+        <div>
+          <div class="muted">Категории</div>
+          <div class="checks" id="f-cats"></div>
+        </div>
+        <label class="checks"><input type="checkbox" id="f-partner"> Основной партнёр</label>
+        <label class="checks"><input type="checkbox" id="f-ahead"> Сначала созвониться</label>
+        <label>Адрес<input id="f-address" placeholder="Улица, дом"></label>
+        <label>Город или населённый пункт<input id="f-locality"></label>
+        <div class="route-row">
+          <label>Широта<input id="f-lat" inputmode="decimal"></label>
+          <label>Долгота<input id="f-lng" inputmode="decimal"></label>
+        </div>
+        <label>Точность точки
+          <select id="f-precision">
+            <option value="house">Дом</option>
+            <option value="street">Примерно, по улице</option>
+            <option value="none">Нет на карте</option>
+          </select>
+        </label>
+        <div class="route-row">
+          <button type="button" class="btn" id="f-geocode">Найти координаты</button>
+          <button type="button" class="btn" id="f-clear-coords">Убрать с карты</button>
+        </div>
+        <div class="hits" id="f-hits"></div>
+        <div id="edit-map"></div>
+        <label>График, каждая строка отдельно
+          <textarea id="f-hours" rows="4" placeholder="пн-пт 09:00-18:00&#10;вс выходной"></textarea>
+        </label>
+        <label>Примечание к графику<input id="f-hours-note"></label>
+        <label>Заметки<textarea id="f-notes" rows="5"></textarea></label>
+        <div class="section-head">
+          <strong>Телефоны</strong>
+          <button type="button" class="btn" id="add-contact">Добавить</button>
+        </div>
+        <div id="f-contacts"></div>
+        <p class="error" id="editor-error"></p>
+        <div class="route-row">
+          <button type="button" class="btn primary" id="save-point">Записать в config.json</button>
+          <button type="button" class="btn" id="delete-point">Удалить</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+  <div id="toast" role="status"></div>
+  <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/js/util.js?v=2"></script>
+  <script src="/js/admin.js?v=2"></script>
+</body>
+</html>
