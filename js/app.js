@@ -439,7 +439,7 @@ function setView(view) {
   }
   state.view = view;
   document.body.dataset.view = view;
-  document.querySelectorAll("[data-view]").forEach((button) => {
+  document.querySelectorAll("button[data-view]").forEach((button) => {
     button.classList.toggle("is-on", button.dataset.view === view);
   });
   if (view === "map" || window.innerWidth >= 960) ensureMap();
@@ -481,7 +481,7 @@ async function loadConfig() {
 }
 
 document.addEventListener("click", (event) => {
-  const view = event.target.closest("[data-view]");
+  const view = event.target.closest("button[data-view]");
   if (view) setView(view.dataset.view);
   const chip = event.target.closest("[data-cat]");
   if (chip) {
@@ -552,8 +552,17 @@ $("install").addEventListener("click", async () => {
   $("install").hidden = true;
 });
 
+function syncHeaderHeight() {
+  const header = document.querySelector(".top");
+  if (!header) return;
+  document.documentElement.style.setProperty("--header", Math.ceil(header.getBoundingClientRect().height) + "px");
+}
+
+syncHeaderHeight();
+window.addEventListener("resize", syncHeaderHeight);
+
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=7").catch(() => {});
+  navigator.serviceWorker.register("sw.js?v=8").catch(() => {});
 }
 
 loadConfig()

@@ -310,14 +310,33 @@ body[data-view="more"] #places { display: none; height: 0; }
 #detail {
   display: none;
   position: fixed;
-  inset: 0;
-  z-index: 40;
+  z-index: 2000;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
   background: var(--bg);
   overflow: auto;
-  padding: 14px 14px 28px;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    16px
+    max(28px, env(safe-area-inset-bottom));
 }
 #detail.open { display: block; }
-.detail-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.detail-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 0 8px;
+  padding: 2px 0 10px;
+  background: var(--bg);
+}
 .detail-bar h2 { flex: 1; min-width: 0; }
 .back {
   height: 44px;
@@ -452,8 +471,10 @@ body[data-view="more"] #places { display: none; height: 0; }
   #view-more { max-width: none; width: 100%; margin: 0; padding: 16px 0 40px; }
   #view-more .rule, #view-more .panel { margin-left: 16px; margin-right: 16px; }
   #detail {
-    inset: var(--header) auto 0 0;
+    top: var(--header);
+    height: auto;
     width: min(440px, 100%);
+    padding-top: 16px;
     border-right: 1px solid var(--line);
   }
   #toast { bottom: 24px; }
