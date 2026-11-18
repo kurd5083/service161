@@ -7,23 +7,24 @@
   <title>Админка — Сервис 161</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="css/app.css?v=4">
+  <link rel="stylesheet" href="css/app.css?v=6">
 </head>
 <body class="admin">
   <header class="top">
-    <div class="brand">
-      <div class="mark">161</div>
-      <div>
-        <b>Админка</b>
-        <small>Скачивает config.json</small>
+    <div class="top-row">
+      <div class="brand">
+        <div class="mark">161</div>
+        <div>
+          <b>Админка</b>
+          <small>Запись сразу на сайт</small>
+        </div>
       </div>
+      <a class="code-chip" href="index.html">На сайт</a>
     </div>
-    <a class="code-chip" href="index.html">На сайт</a>
   </header>
   <main>
     <form class="login" id="login">
       <h1>Вход</h1>
-      <p class="lead">Пароль: 161161</p>
       <input id="password" type="password" autocomplete="current-password" placeholder="Пароль" required>
       <p class="error" id="login-error"></p>
       <button class="btn primary" type="submit">Войти</button>
@@ -100,7 +101,7 @@
         <div id="f-contacts"></div>
         <p class="error" id="editor-error"></p>
         <div class="route-row">
-          <button type="button" class="btn primary" id="save-point">Записать в config.json</button>
+          <button type="button" class="btn primary" id="save-point">Записать</button>
           <button type="button" class="btn" id="delete-point">Удалить</button>
         </div>
       </div>
@@ -108,8 +109,8 @@
   </dialog>
   <div id="toast" role="status"></div>
   <script src="vendor/leaflet/leaflet.js"></script>
-  <script src="js/config.js?v=4"></script>
-  <script src="js/util.js?v=4"></script>
-  <script src="js/admin.js?v=4"></script>
+  <script src="js/config.js?v=6"></script>
+  <script src="js/util.js?v=6"></script>
+  <script src="js/admin.js?v=6"></script>
 </body>
 </html>

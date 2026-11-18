@@ -12,16 +12,19 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="css/app.css?v=4">
+  <link rel="stylesheet" href="css/app.css?v=6">
 </head>
 <body data-view="list">
   <header class="top">
-    <div class="brand">
-      <div class="mark">161</div>
-      <div>
-        <b>Сервис 161</b>
-        <small>Запчасти, баки, модули</small>
+    <div class="top-row">
+      <div class="brand">
+        <div class="mark">161</div>
+        <div>
+          <b>Сервис 161</b>
+          <small>Запчасти, баки, модули</small>
+        </div>
       </div>
+      <button type="button" class="code-chip" id="code-chip">СЕРВИС 161</button>
     </div>
     <nav class="desktop-nav">
       <button type="button" class="is-on" data-view="list">Список</button>
@@ -29,7 +32,6 @@
       <button type="button" data-view="office">Офис</button>
       <button type="button" data-view="more">Ещё</button>
     </nav>
-    <button type="button" class="code-chip" id="code-chip">СЕРВИС 161</button>
   </header>
 
   <section id="places">
@@ -61,19 +63,14 @@
   <section id="view-more">
     <div id="rules"></div>
     <article class="panel">
-      <h3>Открыть с телефона</h3>
-      <div class="stack" id="lan"></div>
-      <p class="muted" id="host-note">Маршрут открывается в Яндекс Картах, Навигаторе или 2ГИС и уже там ведёт от текущего GPS.</p>
-    </article>
-    <article class="panel">
       <h3>Приложение</h3>
       <p>В Chrome или Edge: меню браузера → «Установить приложение» или «Добавить на экран Домой». После первого открытия справочник остаётся в памяти и без сети, карта улиц — только онлайн.</p>
       <button type="button" class="btn primary" id="install" hidden>Установить</button>
     </article>
     <article class="panel">
-      <h3>Откуда берутся данные</h3>
-      <p>Список точек лежит в файле <b>config.json</b> рядом с этой страницей. После правок в админке скачиваются новые <b>config.json</b> и <b>config.js</b>: замените ими старые файлы и снова загрузите папку на Netlify.</p>
-      <p><a class="btn" href="admin.html">Открыть админку</a></p>
+      <h3>Правки</h3>
+      <p>Точки, цены и тексты после записи сразу видны всем, кто открыл сайт.</p>
+      <a class="btn" href="admin.html">Открыть админку</a>
     </article>
   </section>
 
@@ -100,8 +97,8 @@
   <div id="toast" role="status"></div>
 
   <script src="vendor/leaflet/leaflet.js"></script>
-  <script src="js/config.js?v=4"></script>
-  <script src="js/util.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/config.js?v=6"></script>
+  <script src="js/util.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

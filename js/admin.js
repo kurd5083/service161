@@ -13,29 +13,21 @@ function toast(text) {
   toast.timer = setTimeout(() => el.classList.remove("show"), 2200);
 }
 
-function download(name, text) {
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
-  link.download = name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
-
 async function loadSiteConfig() {
-  try {
-    const response = await fetch("config.json", { cache: "no-store" });
-    if (response.ok) {
+  for (const url of ["api/config", "config.json"]) {
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) continue;
       const data = await response.json();
       if (data && Array.isArray(data.points)) return data;
+    } catch {
+      /* local file or the save address is not there yet */
     }
-  } catch {
-    /* opened as a file, without a host */
   }
   if (window.__CONFIG__ && Array.isArray(window.__CONFIG__.points)) {
     return JSON.parse(JSON.stringify(window.__CONFIG__));
   }
-  throw new Error("Не найден config.json");
+  throw new Error("Справочник не открылся");
 }
 
 function uid(prefix) {
@@ -85,13 +77,24 @@ async function persist() {
   payload.rules = payload.rules.filter((rule) => rule.title || rule.text);
   payload.categories = payload.categories.filter((category) => category.title && category.id);
   config = payload;
-  config.updatedAt = new Date().toISOString();
-  const json = JSON.stringify(config, null, 2);
-  download("config.json", json + "\n");
-  setTimeout(() => download("config.js", "window.__CONFIG__ = " + json + ";\n"), 400);
+  const response = await fetch("api/config", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Admin-Password": sessionStorage.getItem("s161-pass") || "",
+    },
+    body: JSON.stringify(config),
+  });
+  if (response.status === 401) {
+    sessionStorage.removeItem("s161");
+    sessionStorage.removeItem("s161-pass");
+    location.reload();
+    return;
+  }
+  if (!response.ok) throw new Error("Не удалось записать");
   if ($("office-title")) renderOffice();
   if ($("text-code")) renderTexts();
-  toast("Скачаны config.json и config.js. Замените их в папке и снова загрузите сайт на Netlify.");
+  toast("Записано");
 }
 
 function renderPoints() {
@@ -125,7 +128,7 @@ function renderOffice() {
       <div id="price-rows">${rows}</div>
       <div class="route-row">
         <button type="button" class="btn" id="add-price">Добавить цену</button>
-        <button type="button" class="btn primary" id="save-office">Сохранить цены</button>
+        <button type="button" class="btn primary" id="save-office">Записать</button>
       </div>
     </div>`;
 }
@@ -153,7 +156,7 @@ function renderTexts() {
       <h3>Категории</h3>
       <div id="cat-rows">${cats}</div>
       <button type="button" class="btn" id="add-cat">Добавить категорию</button>
-      <button type="button" class="btn primary" id="save-texts">Сохранить тексты</button>
+      <button type="button" class="btn primary" id="save-texts">Записать</button>
     </div>`;
 }
 
@@ -366,20 +369,40 @@ document.addEventListener("click", async (event) => {
   if (event.target.closest("[data-cremove]")) event.target.closest(".contact-edit").remove();
 });
 
-$("login").addEventListener("submit", (event) => {
+$("login").addEventListener("submit", async (event) => {
   event.preventDefault();
   $("login-error").textContent = "";
-  const expected = (config && config.adminPassword) || "161161";
-  if ($("password").value !== expected) {
-    $("login-error").textContent = "Неверный пароль";
-    return;
+  const password = $("password").value;
+  let accepted = false;
+  try {
+    const response = await fetch("api/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    if (response.status === 401) {
+      $("login-error").textContent = "Неверный пароль";
+      return;
+    }
+    accepted = response.ok;
+  } catch {
+    accepted = false;
+  }
+  if (!accepted) {
+    const expected = (config && config.adminPassword) || "161161";
+    if (password !== expected) {
+      $("login-error").textContent = "Неверный пароль";
+      return;
+    }
   }
   sessionStorage.setItem("s161", "1");
+  sessionStorage.setItem("s161-pass", password);
   openPanel();
 });
 
 $("logout").addEventListener("click", () => {
   sessionStorage.removeItem("s161");
+  sessionStorage.removeItem("s161-pass");
   location.reload();
 });
 
@@ -394,6 +417,7 @@ $("save-pass").addEventListener("click", async () => {
   $("new-password").value = "";
   try {
     await persist();
+    sessionStorage.setItem("s161-pass", next);
   } catch (error) {
     $("pass-error").textContent = error.message;
   }
@@ -484,7 +508,7 @@ function openPanel() {
 
 async function boot() {
   config = await loadSiteConfig();
-  if (sessionStorage.getItem("s161") === "1") openPanel();
+  if (sessionStorage.getItem("s161") === "1" && sessionStorage.getItem("s161-pass")) openPanel();
 }
 
 boot().catch((error) => {

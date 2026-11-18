@@ -1,4 +1,4 @@
-const CACHE = "s161-v4";
+const CACHE = "s161-v6";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -19,7 +19,7 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/api/") && url.pathname !== "/api/config") return;
+  if (url.pathname.includes("/api/")) return;
 
   event.respondWith(
     (async () => {

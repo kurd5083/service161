@@ -150,7 +150,10 @@ function renderCards() {
       : "";
     return `<article class="card" data-id="${S161.esc(point.id)}">
       <div class="card-top">
-        <h2><span class="badge" style="background:${pointColor(point)};color:#fff">${S161.esc((catById(point.categories[0]) || {}).short || "")}</span> ${S161.esc(point.name)}</h2>
+        <div class="card-title">
+          <span class="badge" style="background:${pointColor(point)};color:#fff">${S161.esc((catById(point.categories[0]) || {}).short || "")}</span>
+          <h2>${S161.esc(point.name)}</h2>
+        </div>
         ${distance ? `<div class="dist">${distance}</div>` : ""}
       </div>
       <p>${S161.esc(point.address || "Адрес не указан")}${point.locality ? " · " + S161.esc(point.locality) : ""}</p>
@@ -204,14 +207,16 @@ function renderDetail(point) {
   const hours = (point.hours || []).map((line) => `<li>${S161.esc(line)}</li>`).join("");
   const contacts = (point.contacts || []).map((contact) => {
     const actions = contactActions(contact);
-    return `<div class="contact">
-      <div>
-        ${contact.name ? `<strong>${S161.esc(contact.name)}</strong><br>` : ""}
-        <span>${S161.esc(S161.formatPhone(contact.phone))}</span>
-        ${contact.note ? `<br><small>${S161.esc(contact.note)}</small>` : ""}
+    return `<div class="person">
+      <div class="contact">
+        <div>
+          ${contact.name ? `<strong>${S161.esc(contact.name)}</strong><br>` : ""}
+          <span>${S161.esc(S161.formatPhone(contact.phone))}</span>
+          ${contact.note ? `<br><small>${S161.esc(contact.note)}</small>` : ""}
+        </div>
       </div>
-    </div>
-    ${actions.map((kind, index) => actionLink(kind, contact, index === 0)).join("")}`;
+      <div class="person-actions">${actions.map((kind, index) => actionLink(kind, contact, index === 0)).join("")}</div>
+    </div>`;
   }).join("");
   const alt = links.yandexAlt
     ? `<a class="linkish" target="_blank" rel="noopener" href="${S161.esc(links.yandexAlt)}">${S161.esc(links.yandexAltLabel)}</a>`
@@ -254,10 +259,7 @@ function renderDetail(point) {
       ${point.hoursNote ? `<p>${S161.esc(point.hoursNote)}</p>` : ""}
     </div>
     ${point.notes ? `<div class="block"><strong>Заметки</strong><p>${S161.esc(point.notes)}</p></div>` : ""}
-    <div class="route-row">
-      <button type="button" class="btn" id="copy-address">Скопировать адрес</button>
-      <button type="button" class="btn" id="share-point">Отправить</button>
-    </div>`;
+    <button type="button" class="btn detail-copy" id="copy-address">Скопировать адрес</button>`;
 }
 
 function showDetail(id, fly) {
@@ -348,25 +350,27 @@ function fitAll() {
   map.fitBounds(coords, { padding: [36, 36], maxZoom: 14 });
 }
 
+function meIcon() {
+  return L.divIcon({
+    className: "me-wrap",
+    html: `<span class="me"><i></i></span>`,
+    iconSize: [36, 52],
+    iconAnchor: [18, 40],
+  });
+}
+
 function updateUserDot() {
   if (!map || !state.pos) return;
   const latlng = [state.pos.lat, state.pos.lng];
   if (!userMarker) {
-    userMarker = L.circleMarker(latlng, {
-      radius: 8,
-      color: "#ffffff",
-      weight: 3,
-      fillColor: "#1d4e89",
-      fillOpacity: 1,
-    }).addTo(map);
+    userMarker = L.marker(latlng, { icon: meIcon(), zIndexOffset: 1000, interactive: false }).addTo(map);
     userCircle = L.circle(latlng, {
       radius: Math.max(state.accuracy || 40, 20),
-      color: "#1d4e89",
+      color: "#1a73e8",
       weight: 1,
-      fillColor: "#1d4e89",
+      fillColor: "#1a73e8",
       fillOpacity: 0.12,
     }).addTo(map);
-    userMarker.bindTooltip("Вы здесь", { direction: "top" });
   } else {
     userMarker.setLatLng(latlng);
     userCircle.setLatLng(latlng);
@@ -429,6 +433,10 @@ function startLocate(fly) {
 }
 
 function setView(view) {
+  if (detailOpen) {
+    if (history.state && history.state.detail) history.replaceState({}, "", location.pathname + location.search);
+    closeDetailUI();
+  }
   state.view = view;
   document.body.dataset.view = view;
   document.querySelectorAll("[data-view]").forEach((button) => {
@@ -461,7 +469,7 @@ async function readConfig(url) {
 }
 
 async function loadConfig() {
-  const next = (await readConfig("config.json")) || window.__CONFIG__ || null;
+  const next = (await readConfig("api/config")) || (await readConfig("config.json")) || window.__CONFIG__ || null;
   if (!next) throw new Error("Не удалось прочитать справочник");
   const changed = JSON.stringify(next) !== JSON.stringify(state.config);
   state.config = next;
@@ -469,28 +477,6 @@ async function loadConfig() {
     renderAll();
     if (map) syncMarkers();
     if (detailOpen && state.selected) showDetail(state.selected, false);
-  }
-}
-
-async function loadInfo() {
-  const links = [location.origin];
-  try {
-    const response = await fetch("api/info", { cache: "no-store" });
-    if (response.ok) {
-      const info = await response.json();
-      for (const link of [info.local, ...(info.lan || [])]) {
-        if (link && !links.includes(link)) links.push(link);
-      }
-    }
-  } catch {
-    /* static hosting has no local network list */
-  }
-  $("lan").innerHTML = links.map((link) => `<a href="${S161.esc(link)}">${S161.esc(link)}</a>`).join("");
-  const note = $("host-note");
-  if (note) {
-    note.textContent = location.protocol === "https:"
-      ? "Ссылка защищённая: с телефона работают карта, синяя точка «где я» и установка на экран."
-      : "По адресу компьютера в Wi-Fi звонки и маршруты работают. Синяя точка «где я» с телефона по обычному http может быть закрыта браузером.";
   }
 }
 
@@ -523,12 +509,6 @@ document.addEventListener("click", (event) => {
   if (event.target.closest("#copy-code, #code-chip")) copyText(state.config.codeWord);
   if (event.target.id === "copy-address" && state.selected) {
     copyText(S161.navAddress(pointById(state.selected)));
-  }
-  if (event.target.id === "share-point" && state.selected) {
-    const point = pointById(state.selected);
-    const text = `${point.name}\n${S161.navAddress(point)}\nКодовое слово: ${state.config.codeWord}`;
-    if (navigator.share) navigator.share({ title: point.name, text }).catch(() => {});
-    else copyText(text);
   }
 });
 
@@ -573,7 +553,7 @@ $("install").addEventListener("click", async () => {
 });
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=4").catch(() => {});
+  navigator.serviceWorker.register("sw.js?v=6").catch(() => {});
 }
 
 loadConfig()
@@ -584,6 +564,5 @@ loadConfig()
   .catch((error) => {
     $("cards").innerHTML = `<div class="empty">${S161.esc(error.message)}</div>`;
   });
-loadInfo();
 setInterval(() => loadConfig().catch(() => {}), 60000);
 window.addEventListener("focus", () => loadConfig().catch(() => {}));
