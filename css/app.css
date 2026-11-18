@@ -287,8 +287,7 @@ body[data-view="more"] #places { display: none; height: 0; }
 }
 .panel .btn, .rule .btn { width: 100%; margin-top: 14px; }
 .rule h3, .panel h3 { margin: 0 0 6px; font-size: 16px; }
-.rule p, .panel p { margin: 0; line-height: 1.45; }
-.panel p + p { margin-top: 10px; }
+.rule p, .panel p { margin: 0; line-height: 1.4; }
 .stack { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .stack a { word-break: break-all; }
 
